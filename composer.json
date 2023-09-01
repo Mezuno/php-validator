@@ -16,7 +16,7 @@
     "psr-4": {
       "Mezuno\\Validator\\Rules\\": "src/Rules",
       "Mezuno\\Validator\\Rules\\Abstract\\": "src/Rules/Abstract",
-      "Mezuno\\Validator\\Excpetions\\": "src/Exceptions"
+      "Mezuno\\Validator\\Exceptions\\": "src/Exceptions"
     }
   }
 }
