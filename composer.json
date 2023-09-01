@@ -1,0 +1,22 @@
+{
+  "name": "mezuno/php-validator",
+  "description": "Php data validator",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Mezuno",
+      "email": "mekishido@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^8.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Mezuno\\Validator\\Rules\\": "src/Rules",
+      "Mezuno\\Validator\\Rules\\Abstract\\": "src/Rules/Abstract",
+      "Mezuno\\Validator\\Excpetions\\": "src/Exceptions"
+    }
+  }
+}
