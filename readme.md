@@ -1,4 +1,4 @@
-# Requests & Rules Validator
+# Rules Validator
 
 > Документация к RulesValidator
 
@@ -6,58 +6,15 @@ ___
 
 Оглавление
 
-1. [Метод rules()](#rules)
-   - [Правила](#availableRules)
-2. [Методы правил](#rulesMethods)
+1. [Методы правил](#rulesMethods)
    - [required() и nullable()](#requiredAndNullable)
    - [min() и max()](#minAndMax)
    - [items()](#items)
    - [existsValidator()](#existsValidator)
    - [type()](#type)
-3. [Метод validationException()](#validationExceptions)
-4. [Метод validate()](#validate)
 
 ___
 
-Каждый Request может содержать 3 метода для обработки входящих данных:
-```php
-
-class SomeRequest extends \Kernel\Request {
-
-    protected function rules(): array
-    {
-        // Ваши правила валидации полей
-    }
-    
-    protected function validationExceptions(): array
-    {
-        // Кастомные сообщения об ошибках валидации
-    }
-    
-    public function validate(): void
-    {
-        // Дополнительная валидация и преобразование после правил
-    }
-}
-```
-___
-## <a name="rules"></a>Метод rules()
-
-
-Возвращает массив правил валидации входящих полей
-
-Правила представляют собой классы с постфиксом Rules
->Пример IntRules для some_integer_field:
-```php
-protected function rules(): array
-{
-    return [
-        'some_integer_field' => IntRules::make();
-    ];
-}
-```
-
-___
 
 ### <a name="availableRules"></a> Правила
 
@@ -318,41 +275,4 @@ protected function validationExceptions(): array
     ];
 }
 ```
-
-## Метод <a name="validate"></a>validate()
-
-Здесь происходит любая дополнительная валидация после правил. <br>
-Если по какой-то причине правил валидации не хватило, поля можно довалидировать здесь. <br>
-
-
-Здесь досутпно два массива данных
-
-1. `$this->data[]` - массив входящих данных
-2. `$this->validated[]` - массив отвалидированных входящих данных
-
-```php
-public function validate(): void
-{
-    if ($this->validated['some_flag']) {
-        // Ваша логика
-    }
-}
-```
-
-Также, здесь можно отформатировать или как-либо преобразовать входящие данные.
-```php
-
-public function validate(): void
-{
-    $this->validated['new_field'] =
-        (float)$this->validated['some_integer_field'];
-        
-    unset($this->validated['some_integer_field']);
-}
-```
-
-После всех махинаций с данными массива `$this->validated[]`, его можно будет получить в контроллере
-при помощи метода `$request->validated()`
-
-Чтобы получить конкретное поле можно указать ключ `$request->validated('some_integer_field')`
 
