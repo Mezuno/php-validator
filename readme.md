@@ -10,7 +10,7 @@ ___
    - [required() и nullable()](#requiredAndNullable)
    - [min() и max()](#minAndMax)
    - [items()](#items)
-   - [existsValidator()](#existsValidator)
+   - [exists()](#exists)
    - [type()](#type)
 
 ___
@@ -54,11 +54,10 @@ nullable() отвечает за обязательность и возможн�
 
 
 ```php
-protected function rules(): array
-{
+$rules = [
     'some_field' => IntRules::make()->required(),
     'another_field' => IntRules::make()->nullable(),
-}
+];
 ```
 
 > [!WARNING]
@@ -73,12 +72,9 @@ required() и nullable() взаимоисключающие правила <br>
 
 > Пример:
 ```php
-protected function rules(): array
-{
-    return [
-        'some_integer_field' => IntRules::make()->min(1)->max(3),
-    ];
-}
+$rules = [
+     'some_integer_field' => IntRules::make()->min(1)->max(3),
+];
 ```
 ___
 
@@ -88,12 +84,9 @@ ___
 
 > Пример:
 ```php
-protected function rules(): array
-{
-    return [
-        'password' => StringRules::make()->min(8)->max(32),
-    ];
-}
+$rules = [
+     'password' => StringRules::make()->min(8)->max(32),
+];
 ```
 
 ### <a name="items"></a>items()
@@ -107,14 +100,11 @@ protected function rules(): array
 
 > Пример массива с одним обязательным полем:
 ```php
-protected function rules(): array
-{
-    return [
-        'some_array_field' => ArrayRules::make()->items([
-            'some_array_item' => StringRules::make()->required(),
-        ]),
-    ];
-}
+$rules = [
+     'some_array_field' => ArrayRules::make()->items([
+         'some_array_item' => StringRules::make()->required(),
+     ]),
+];
 ```
 
 Валидно:
@@ -144,14 +134,11 @@ ___
 Второй параметр при валидации вложенных массивов - true
 
 ```php
-protected function rules(): array
-{
-    return [
-        'some_array_field' => ArrayRules::make()->items([
-            'some_nested_array_item' => IntRules::make()->required(),
-        ], true),
-    ];
-}
+$rules = [
+     'some_array_field' => ArrayRules::make()->items([
+         'some_nested_array_item' => IntRules::make()->required(),
+     ], true),
+];
 ```
 
 Валидно:
@@ -181,9 +168,9 @@ protected function rules(): array
 
 > Пример:
 ```php
- $rules = [
-     'card_barcode' => StringRules::make()->exists(CardRepository::class, 'findByBarcode'),
- ];
+$rules = [
+  'card_barcode' => StringRules::make()->exists(CardRepository::class, 'findByBarcode'),
+];
 ```
 
 ## <a name="validationExceptions"></a>Метод validationExceptions()
@@ -195,26 +182,17 @@ protected function rules(): array
 
 > Пример:
 ```php
-protected function validationExceptions(): array
-{
-    return [
-        'field' => [
-            'required' => new CustomException('Some custom message for required');
-            'type' => new CustomException('Some custom message for type');
-            'min' => new CustomException('Some custom message for min');
-            'max' => new CustomException('Some custom message for max');
-            'exists' => new CustomException('Some custom message for exists');
-        ],
-        
-        'phone_field' => [
-            'phone' => new CustomException('Some custom message for phone');
-        ],
-        
-        'email_field' => [
-            'email' => new CustomException('Some custom message for email');
-        ],
-    ];
-}
+$messages = [
+     'field.required' => 'Some custom message for required',
+     'field.type' => 'Some custom message for type'
+     'field.min' => 'Some custom message for min'
+     'field.max' => 'Some custom message for max'
+     'field.exists' => 'Some custom message for exists'
+     
+     'phone_field.phone' => 'Some custom message for phone';
+     
+     'email_field.email' => 'Some custom message for email';
+];
 ```
 
 В данном примере при непереданном в запросе поле field будет выброшен указанный Exception.
@@ -224,30 +202,16 @@ ___
 Также, в можно указать кастомные Exception для элементов массивов, следующим образом:
 
 ```php
-protected function validationExceptions(): array
-{
-    return [
-        'product' => [
-            'items' => [
-                'price' => new CustomException('Item product[price] required.');                        
-            ],
-        ],
-    ];
-}
+$rules = [
+     'product.items.price' => 'Item product[price] required.';
+];
 ```
 
 Если необходимо добавить кастомное сообщение для элемента вложенного массива, используйте ключ nested_items:
 
 ```php
-protected function validationExceptions(): array
-{
-    return [
-        'products' => [
-            'nested_items' => [
-                'price' => new CustomException('Item products[][price] required.');                        
-            ],
-        ],
-    ];
-}
+$rules = [
+     'products.nested_items.price' => 'Item products[][price] required.';
+];
 ```
 

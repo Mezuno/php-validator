@@ -56,11 +56,13 @@ $data = [
 $rules = [
     'integer_field' => IntRules::make()->min(1)->max(4),
     'string_field' => StringRules::make()->required(),
+    'bool_field' => BoolRules::make(),
+
     'array_field' => ArrayRules::make()->items([
         'id' => IntRules::make()->min(1),
         'name' => StringRules::make()->min(2),
     ]),
-    'bool_field' => BoolRules::make(),
+
 ];
 
 
