@@ -1,25 +1,25 @@
 <?php
 
-namespace Mezuno\Validator\Rules;
+namespace Mezuno\Validator\Rules\Traits;
 
 trait Limitable
 {
     /**
-     * Миниальное значение
+     * Min value
      *
      * @var int|null
      */
     private ?int $min = null;
 
     /**
-     * Максимальное значение
+     * Max value
      *
      * @var int|null
      */
     private ?int $max = null;
 
     /**
-     * Установить минимальное значение
+     * Set min value
      *
      * @param int $min
      * @return $this
@@ -32,7 +32,7 @@ trait Limitable
     }
 
     /**
-     * Установить максимальное значение
+     * Set max value
      *
      * @param int $max
      * @return $this
@@ -45,7 +45,7 @@ trait Limitable
     }
 
     /**
-     * Получить минимальное значение
+     * Get min value
      *
      * @return int
      */
@@ -55,7 +55,7 @@ trait Limitable
     }
 
     /**
-     * Получить максимальное значение
+     * Get max value
      *
      * @return int
      */
@@ -65,7 +65,7 @@ trait Limitable
     }
 
     /**
-     * Имеет установленное минимальное значение
+     * Has min value
      *
      * @return bool
      */
@@ -75,7 +75,7 @@ trait Limitable
     }
 
     /**
-     * Имеет установленное максимальное значение
+     * Has max value
      *
      * @return bool
      */

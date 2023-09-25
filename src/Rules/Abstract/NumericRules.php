@@ -2,32 +2,82 @@
 
 namespace Mezuno\Validator\Rules\Abstract;
 
-use Mezuno\Validator\Exceptions\ValidationException;
-use Mezuno\Validator\Rules\Limitable;
+use Mezuno\Validator\Rules\Traits\Limitable;
+use function Mezuno\Validator\message;
 
 abstract class NumericRules extends AbstractRules
 {
     use Limitable;
 
+    /**
+     * Name of expected type of field.
+     *
+     * @var string
+     */
+    protected static string $type = 'numeric';
+
     /** @inheritdoc */
-    public function valid(array $data, string $field, array $exceptions = [])
+    public function valid(array $data, string $field, array $messages = [])
     {
-        parent::valid($data, $field, $exceptions);
+        parent::valid($data, $field, $messages);
 
-        if ($this->hasMin() && $this->getValue() < $this->getMin() && $this->hasValue()) {
+        $this->checkMin();
+        $this->checkMax();
+    }
 
-            throw $this->exceptions['min'] ??
-                new ValidationException('Field ' . $this->field . ' must be >= ' . $this->getMin() . '. Current value: ' . $this->getValue(), $this->field);
-        }
-
-        if ($this->hasMax() && $this->getValue() > $this->getMax() && $this->hasValue()) {
-
-            throw $this->exceptions['max'] ??
-                new ValidationException('Field ' . $this->field . ' must be <= ' . $this->getMax() . '. Current value: ' . $this->getValue(), $this->field);
+    /**
+     * Checks is data more than min length.
+     *
+     * @return void
+     */
+    private function checkMin(): void
+    {
+        if (
+            $this->hasMin() &&
+            $this->getDataValue() < $this->getMin() &&
+            $this->hasValue() &&
+            empty($this->errors['required']) &&
+            empty($this->errors['type'])
+        ) {
+            $this->errors['min'] =
+                message('min.numeric',
+                    [
+                        $this->field,
+                        $this->getMin(),
+                        $this->getDataValue(),
+                    ],
+                    $this->customMessages('min'),
+                );
         }
     }
 
-    /** @inheritdoc  */
+    /**
+     * Checks is data less than max length.
+     *
+     * @return void
+     */
+    private function checkMax(): void
+    {
+        if (
+            $this->hasMax() &&
+            $this->getDataValue() < $this->getMax() &&
+            $this->hasValue() &&
+            empty($this->errors['required']) &&
+            empty($this->errors['type'])
+        ) {
+            $this->errors['max'] =
+                message('max.numeric',
+                    [
+                        $this->field,
+                        $this->getMax(),
+                        $this->getDataValue(),
+                    ],
+                    $this->customMessages('max'),
+                );
+        }
+    }
+
+    /** @inheritdoc */
     protected function hasValidType(): bool
     {
         return is_numeric($this->getValue());

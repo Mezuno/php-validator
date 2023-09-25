@@ -10,10 +10,12 @@
     }
   ],
   "require": {
-    "php": "^8.1"
+    "php": "^8.1",
+    "adbario/php-dot-notation": "^3.3"
   },
   "autoload": {
     "psr-4": {
+      "Mezuno\\Validator\\": "src/",
       "Mezuno\\Validator\\Rules\\": "src/Rules",
       "Mezuno\\Validator\\Rules\\Abstract\\": "src/Rules/Abstract",
       "Mezuno\\Validator\\Exceptions\\": "src/Exceptions"

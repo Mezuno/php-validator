@@ -7,16 +7,16 @@ use Mezuno\Validator\Rules\Abstract\AbstractRules;
 final class BoolRules extends AbstractRules
 {
     /**
-     * Название ожидаемого типа данных
+     * Name of expected type of field.
      *
      * @var string
      */
     protected static string $type = 'bool';
 
     /** @inheritdoc */
-    public function valid(array $data, string $field, array $exceptions = []): bool
+    public function valid(array $data, string $field, array $messages = []): bool
     {
-        parent::valid($data, $field, $exceptions);
+        parent::valid($data, $field, $messages);
 
         return filter_var($this->getValue(), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
     }

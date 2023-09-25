@@ -2,8 +2,8 @@
 
 namespace Mezuno\Validator\Rules;
 
-use Mezuno\Validator\Exceptions\ValidationException;
 use Mezuno\Validator\Rules\Abstract\AbstractRules;
+use function Mezuno\Validator\message;
 
 final class ArrayRules extends AbstractRules
 {
@@ -11,28 +11,28 @@ final class ArrayRules extends AbstractRules
     protected const NESTED_ITEMS_EXCEPTION_FIELD = 'nested_items';
 
     /**
-     * Название ожидаемого типа данных
+     * Name of expected type of field
      *
      * @var string
      */
     protected static string $type = 'array';
 
     /**
-     * Правила валидации элементов массива
+     * Rules for validation array items
      *
      * @var array
      */
     protected array $itemsRules = [];
 
     /**
-     * Правила валидации элементов каждого вложенного массива
+     * Rules for validation nested array items
      *
      * @var array
      */
     protected array $nestedItemsRules = [];
 
     /**
-     * Установить правила для элементов массива
+     * Set rules for validation array items
      *
      * @param array $itemsRules
      * @param bool $nested
@@ -50,49 +50,49 @@ final class ArrayRules extends AbstractRules
     }
 
     /** @inheritdoc  */
-    public function valid(array $data, string $field, array $exceptions = [])
+    public function valid(array $data, string $field, array $messages = [])
     {
-        parent::valid($data, $field, $exceptions);
+        parent::valid($data, $field, $messages);
 
         if (empty($data[$field])) {
-            throw new ValidationException(__('array.must_be_not_empty.error', $field), $field);
+            $this->errors['required'] = message('required.array', $this->field, $this->customMessages('required'));
         }
 
-        /** Дальше идет логика обработки элементов массива и элементов вложенных массивов */
+        /** Next comes the logic for processing the rules of the array elements */
 
         $returnData = [];
 
-        /** Если не пусты правила для элементов массива */
+        /** If the rules for array elements are not empty */
         if (!empty($this->getItemsRules())) {
 
-            /** Перебираем правила и применяем к элементам */
+            /** We loop through the rules and apply them to elements */
             foreach ($this->getItemsRules() as $subfield => $itemRules) {
 
                 $returnData[$subfield] =
                     $itemRules->valid(
                         $data[$this->field],
                         $subfield,
-                        $exceptions[$this->field][self::ITEMS_EXCEPTION_FIELD][$subfield] ?? []
+                        $messages[$this->field][self::ITEMS_EXCEPTION_FIELD][$subfield] ?? []
                     );
             }
         }
 
-        /** Если не пусты правила для элементов вложенных массивов */
+        /** If the rules for elements of nested arrays are not empty */
         if (!empty($this->getNestedItemsRules())) {
 
-            /** Перебираем вложенные массивы */
+            /** Loop through nested arrays */
             foreach ($data[$field] as $subArray) {
 
                 $validatedSubItem = [];
 
-                /** Применяем к каждому элементу вложенного массива правила */
+                /** Apply rules to each element of the nested array */
                 foreach ($this->getNestedItemsRules() as $nestedItemField => $nestedItemsRule) {
                     $validatedSubItem[$nestedItemField] =
                         $nestedItemsRule
                             ->valid(
                                 $subArray,
                                 $nestedItemField,
-                                $exceptions[self::NESTED_ITEMS_EXCEPTION_FIELD][$nestedItemField] ?? []
+                                $messages[self::NESTED_ITEMS_EXCEPTION_FIELD][$nestedItemField] ?? []
                             );
                 }
 
@@ -104,7 +104,7 @@ final class ArrayRules extends AbstractRules
     }
 
     /**
-     * Получить правила валидации элементов массива
+     * Get array element validation rules
      *
      * @return array
      */
@@ -114,7 +114,7 @@ final class ArrayRules extends AbstractRules
     }
 
     /**
-     * Получить правила валидации элементов массива
+     * Get nested array element validation rules
      *
      * @param string|null $field
      * @return AbstractRules[]|AbstractRules

@@ -2,15 +2,21 @@
 
 namespace Mezuno\Validator\Rules;
 
-use Mezuno\Validator\Exceptions\ValidationException;
+use function Mezuno\Validator\message;
 
 final class EmailRules extends StringRules
 {
+    /**
+     * Name of expected type of field.
+     *
+     * @var string
+     */
+    protected static string $type = 'email';
 
     /** @inheritDoc */
-    public function valid(array $data, string $field, array $exceptions = [])
+    public function valid(array $data, string $field, array $messages = [])
     {
-        parent::valid($data, $field, $exceptions);
+        parent::valid($data, $field, $messages);
 
         return $this->getValue();
     }
@@ -19,8 +25,9 @@ final class EmailRules extends StringRules
     protected function hasValidType(): bool
     {
         if (!filter_var($this->getValue(), FILTER_VALIDATE_EMAIL) && $this->hasValue() && !empty($this->getValue())) {
-            throw $this->exceptions['email'] ??
-                new ValidationException('Field ' . $this->field . ' must be valid E-mail.', $this->field);
+
+            $this->errors['email'] =
+                message('type.email', $this->field, $this->customMessages('email'));
         }
 
         return true;

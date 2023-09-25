@@ -2,38 +2,74 @@
 
 namespace Mezuno\Validator\Rules;
 
-use Mezuno\Validator\Exceptions\ValidationException;
 use Mezuno\Validator\Rules\Abstract\AbstractRules;
+use Mezuno\Validator\Rules\Traits\Limitable;
+use function Mezuno\Validator\message;
 
 class StringRules extends AbstractRules
 {
     use Limitable;
 
     /**
-     * Название ожидаемого типа данных
+     * Name of expected type of field.
      *
      * @var string
      */
     protected static string $type = 'string';
 
     /** @inheritDoc */
-    public function valid(array $data, string $field, array $exceptions = [])
+    public function valid(array $data, string $field, array $messages = [])
     {
-        parent::valid($data, $field, $exceptions);
+        parent::valid($data, $field, $messages);
 
-        if ($this->hasMin() && $this->hasValue() && strlen($this->getValue()) < $this->getMin()) {
-
-            throw $this->exceptions['min'] ??
-                new ValidationException('Field ' . $field . ' must contain >= ' . $this->getMin() . ' characters. Current value: ' . strlen($this->getValue()), $this->field);
-        }
-
-        if ($this->hasMax() && $this->hasValue() && strlen($this->getValue()) > $this->getMax()) {
-
-            throw $this->exceptions['max'] ??
-                new ValidationException('Field ' . $field . ' must contain <= ' . $this->getMax() . ' characters. Current value: ' . strlen($this->getValue()), $this->field);
-        }
+        $this->checkMin();
+        $this->checkMax();
 
         return $this->getValue();
+    }
+
+    /**
+     * Checks is data more than min length.
+     *
+     * @return void
+     */
+    private function checkMin(): void
+    {
+        if ($this->hasMin() && $this->hasValue() && strlen($this->getDataValue()) < $this->getMin() && empty($this->errors['required'])) {
+
+            $this->errors['min'] =
+                message(
+                    'min.string',
+                    [
+                        $this->field,
+                        $this->getMin(),
+                        strlen($this->getDataValue())
+                    ],
+                    $this->customMessages('min')
+                );
+        }
+    }
+
+    /**
+     * Checks is data less than max length.
+     *
+     * @return void
+     */
+    private function checkMax(): void
+    {
+        if ($this->hasMax() && $this->hasValue() && strlen($this->getDataValue()) > $this->getMax() && empty($this->errors['required'])) {
+
+            $this->errors['max'] =
+                message(
+                    'max.string',
+                    [
+                        $this->field,
+                        $this->getMin(),
+                        strlen($this->getDataValue())
+                    ],
+                    $this->customMessages('max')
+                );
+        }
     }
 
     /** @inheritDoc */
@@ -43,7 +79,7 @@ class StringRules extends AbstractRules
     }
 
     /**
-     * Имеется ли поле в реквесте
+     * Is there a field in the request.
      *
      * @return bool
      */

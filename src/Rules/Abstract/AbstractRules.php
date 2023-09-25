@@ -2,83 +2,90 @@
 
 namespace Mezuno\Validator\Rules\Abstract;
 
-use Mezuno\Validator\Rules\ValidationRules as ValidationRulesInterface;
-use Mezuno\Validator\Exceptions\ValidationException;
+use Mezuno\Validator\Contracts\ValidationRules as ValidationRulesInterface;
+use function Mezuno\Validator\message;
 
 abstract class AbstractRules implements ValidationRulesInterface
 {
     /**
-     * Обязательно ли поле к заполнению
+     * Required field.
      *
      * @var bool
      */
     protected bool $required = false;
 
     /**
-     * Может ли поле быть NULL
+     * Can field be NULL.
      *
      * @var bool
      */
     protected bool $nullable = false;
 
     /**
-     * Стандартное значение поля
+     * Default value for field.
      *
      * @var mixed|null
      */
     protected mixed $default = null;
 
     /**
-     * Название поля, к которому применяются правила
+     * Name of the field to which the rules apply.
      *
      * @var string
      */
     protected string $field;
 
     /**
-     * Название ожидаемого типа данных
+     * Name of expected type of field.
      *
      * @var string
      */
     protected static string $type;
 
     /**
-     * Валидируемые данные
+     * Data for validation.
      *
      * @var array
      */
     private array $data;
 
     /**
-     * Кастомные эксепшены
+     * Errors, occurred during validation.
      *
      * @var array
      */
-    protected array $exceptions = [];
+    protected array $errors = [];
 
     /**
-     * Поле должно существовать в БД
+     * Error messages for current field.
+     *
+     * @var array
+     */
+    private array $messages = [];
+
+    /**
+     * Field must exist in database.
      *
      * @var bool
      */
     protected bool $mustExists = false;
 
     /**
-     * Репозиторий, в котором ищется значение
+     * Repository for exists rule.
      *
-     * @var string
+     * @var string|null
      */
     protected ?string $existsRepository = null;
 
     /**
-     * Метод, по которому ищется поле в $existsRepository
+     * Repository method for exists rule
      *
-     * @var string
+     * @var string|null
      */
     protected ?string $existsMethod = null;
 
     /**
-     * Имеет ли поле валидный тип данных
+     * Field has valid type function.
      *
      * @return bool
      */
@@ -127,57 +134,117 @@ abstract class AbstractRules implements ValidationRulesInterface
     }
 
     /** @inheritDoc */
-    public function valid(array $data, string $field, array $exceptions = [])
+    final public function errors(): array
     {
-        $this->field = $field;
-        $this->data = $data;
-        $this->exceptions = $exceptions;
+        return $this->errors;
+    }
 
+    /** @inheritDoc */
+    public function valid(array $data, string $field, array $messages = [])
+    {
+        $this->setFields($data, $field, $messages);
+
+        $this->checkRequired();
+        $this->checkType();
+        $this->checkExists();
+    }
+
+    /**
+     * Check required rule for current field.
+     *
+     * @return void
+     */
+    private function checkRequired(): void
+    {
         if ($this->isRequired() && !$this->hasValue()) {
 
-            throw $this->exceptions['required'] ?? new ValidationException($this->field . ' field is required.', $this->field);
+            $this->errors['required'] =
+                message('required.default', $this->field, $this->customMessages('required'));
         }
+    }
 
-        if (!$this->hasValidType() && !($this->isNullable() && $this->isValueNull())) {
+    /**
+     * Check type for current field.
+     *
+     * @return void
+     */
+    private function checkType(): void
+    {
+        if (!$this->hasValidType() && !($this->isNullable() && $this->isValueNull()) && empty($this->errors['required'])) {
 
-            throw $this->exceptions['type'] ?? new ValidationException($this->getValidTypeExceptionMessage(), $this->field);
+            $this->errors['type'] =
+                message(
+                    'type.' . static::$type,
+                    [
+                        $this->field,
+                        gettype($this->getDataValue())
+                    ],
+                    $this->customMessages('type'),
+                );
         }
+    }
 
+    /**
+     * Check exists rule for current field.
+     *
+     * @return void
+     */
+    private function checkExists(): void
+    {
         if ($this->mustExists && $this->isRequired()) {
 
             if (is_null($this->existsRepository)) {
-                throw new ValidationException('Enter repository for search field ' . $this->field . '.', $this->field);
+                $this->errors['repository'] =
+                    message('repository', $this->field, $this->customMessages('repository'));
             }
 
             if (is_null($this->existsMethod)) {
-                throw new ValidationException('Enter repository method for search field ' . $this->field . '.', $this->field);
+                $this->errors['method'] =
+                    message('method', $this->field, $this->customMessages('method'));
             }
 
             $found = (new $this->existsRepository)->{$this->existsMethod}($this->getValue());
 
             if (!$found) {
 
-                throw new ValidationException('Field ' . $this->field . ' must exists in database.', $this->field);
+                $this->errors['exists'] =
+                    message('exists', $this->field, $this->customMessages('exists'));
             }
         }
     }
 
     /**
-     * Возвращает строку для ValidationException с сообщением о несоответствии ожидаемого типа с полученным
+     * Get custom message
      *
-     * @return string
+     * @param string $type
+     * @return string|null
      */
-    private function getValidTypeExceptionMessage(): string
+    protected function customMessages(string $type): ?string
     {
-        return 'Field ' . $this->field . ' must be type of ' . static::$type . ', ' . gettype($this->getValue()) . ' given.';
+        return $this->messages[$type] ?? null;
     }
 
     /**
-     * Получить значение поля
+     * Set general fields of rule
      *
-     * Если в реквесте имеется поле, возвращает его
+     * @param array $data
+     * @param string $field
+     * @param array $messages
+     * @return void
+     */
+    private function setFields(array $data, string $field, array $messages = []): void
+    {
+        $this->field = $field;
+        $this->data = $data;
+        $this->messages = $messages;
+    }
+
+    /**
+     * Get field value
      *
-     * Если нет, возвращает стандартное
+     * If data contains a field, returns it
+     *
+     * If not, returns default
      *
      * @return mixed
      */
@@ -191,7 +258,7 @@ abstract class AbstractRules implements ValidationRulesInterface
     }
 
     /**
-     * Имеет ли поле стандартное значение, или значение из реквеста
+     * Does the field have a standard value, or the value from the request
      *
      * @return bool
      */
@@ -201,7 +268,7 @@ abstract class AbstractRules implements ValidationRulesInterface
     }
 
     /**
-     * Получить значение поля в реквесте
+     * Get field value in $data
      *
      * @return mixed
      */
@@ -211,7 +278,7 @@ abstract class AbstractRules implements ValidationRulesInterface
     }
 
     /**
-     * Получить стандартное значение для поля
+     * Get the default value for a field
      *
      * @return mixed
      */
@@ -221,7 +288,7 @@ abstract class AbstractRules implements ValidationRulesInterface
     }
 
     /**
-     * Имеется ли поле в реквесте
+     * Is there a field in $data
      *
      * @return bool
      */
@@ -231,7 +298,7 @@ abstract class AbstractRules implements ValidationRulesInterface
     }
 
     /**
-     * Обязательно ли поле к заполнению
+     * Is field required
      *
      * @return bool
      */
@@ -241,7 +308,7 @@ abstract class AbstractRules implements ValidationRulesInterface
     }
 
     /**
-     * Может ли поле быть NULL
+     * Can a field be NULL
      *
      * @return bool
      */
@@ -251,7 +318,7 @@ abstract class AbstractRules implements ValidationRulesInterface
     }
 
     /**
-     * Является ли значение поля NULL
+     * Is the field value NULL
      *
      * @return bool
      */
@@ -261,7 +328,7 @@ abstract class AbstractRules implements ValidationRulesInterface
     }
 
     /**
-     * Имеет ли поле стандартное значение
+     * Does the field have a default value
      *
      * @return bool
      */
@@ -271,7 +338,7 @@ abstract class AbstractRules implements ValidationRulesInterface
     }
 
     /**
-     * Должно ли поле сущестовать в БД
+     * Must the field exist in the database
      *
      * @return bool
      */

@@ -7,7 +7,7 @@ use Mezuno\Validator\Rules\Abstract\AbstractRules;
 class DateRules extends AbstractRules
 {
     /**
-     * Название ожидаемого типа данных
+     * Name of expected type of field.
      *
      * @var string
      */
@@ -15,9 +15,9 @@ class DateRules extends AbstractRules
 
 
     /** @inheritDoc */
-    public function valid(array $data, string $field, array $exceptions = [])
+    public function valid(array $data, string $field, array $messages = [])
     {
-        parent::valid($data, $field, $exceptions);
+        parent::valid($data, $field, $messages);
 
         return $this->getValue();
     }
