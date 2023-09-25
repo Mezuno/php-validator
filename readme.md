@@ -174,42 +174,17 @@ protected function rules(): array
 }
 ```
 
-### <a name="existsValidator"></a>existsValidator()
-> Этот метод имеет только ExistsRules.
+### <a name="exists"></a>exists()
 
 Принимает в себя класс репоизтория первым параметром, и метод этого
 репозитория вторым параметром.
 
 > Пример:
 ```php
-protected function rules(): array
-{
-    return [
-        'card_barcode' => ExistsRules::make()->existsValidator(CardRepository::class, 'findByBarcode'),
-    ];
-}
+ $rules = [
+     'card_barcode' => StringRules::make()->exists(CardRepository::class, 'findByBarcode'),
+ ];
 ```
-
-### <a name="type"></a>type()
-> Этот метод имеет только ExistsRules.
-
-Необходим для указания типа поля, которое должно существовать в БД.
-
-> Пример:
-```php
-protected function rules(): array
-{
-    return [
-        'card_barcode' => ExistsRules::make()
-            ->type(IntRules::class)
-            ->existsValidator(CardRepository::class, 'findByBarcode'),
-    ];
-}
-```
-
-> [!WARNING]
-При указании типа таким образом, нельзя указать дополнительные правила.
-Например: если поле должно быть строкой, нельзя указать длину этой строки.
 
 ## <a name="validationExceptions"></a>Метод validationExceptions()
 
