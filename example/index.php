@@ -19,7 +19,7 @@ $data = [
 
 $rules = [
     'integer_field'     => 'int|required|min:1|max:5',
-    'email_field'       => 'email|required',
+    'email_field'       => 'email|required|exists:UserRepository,findByEmail',
     'string_field'      => 'string|required|min:6|max:11',
     'array_field'       => 'array|required|between:1,3',
     'float_field'       => [
