@@ -14,6 +14,6 @@ if (!function_exists('message')) {
      */
     function message(string $path, array|string $replace, ?string $custom = null): string
     {
-        return \Mezuno\Validator\ValidationMessages::message($path, $replace, $custom);
+        return Tools\ValidatorMessages::get($path, $replace, $custom);
     }
 }
